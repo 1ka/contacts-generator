@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
 import android.provider.ContactsContract.CommonDataKinds.Note;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
@@ -138,19 +137,7 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 	}
 
 	private int getGenerateCount() {
-		// final int min = 1;
-		// final int max = mSeekBar.getMax();
-		final int cur = mSeekBar.getProgress();
-
-		return cur;
-
-		// final int threshold = max / 2;
-		//
-		// if (cur < threshold) {
-		// return cur;
-		// }
-		//
-		// return threshold + (cur - threshold) * 10;
+		return mSeekBar.getProgress();
 	}
 
 	private void syncGenerateCountTextView() {
@@ -282,9 +269,8 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		@Override
 		protected Void doInBackground(final Integer... params) {
 
-			final int size = 128;
-			final int minPhone = 1000000;
-			final int maxPhone = 9999999;
+			// Large bitmaps take a while to save...
+			final int size = 256;
 
 			final int count = params[0];
 
@@ -296,33 +282,97 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 			for (int i = 0; i < count && !isCancelled(); i++) {
 				fields.add(note);
 
+				// We always generate a contact name
 				final ContactField name = ContactBuilder.getName();
 				fields.add(name);
 
-				fields.add(ContactBuilder.getEmail(name.getValue()));
+				// There can be up to three email addresses with a 70% chance of
+				// showing any one when randomised
+				for (int j = 0; j < 3; j++) {
+					if (shouldInclude(0.7f)) {
+						fields.add(ContactBuilder.getEmail(name.getValue()));
+					}
+				}
 
-				final String mobile = Integer.toString(minPhone
-						+ random.nextInt(maxPhone - minPhone));
-				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
-						mobile, Phone.TYPE, Phone.TYPE_MOBILE));
+				// There can be up to three websites with a 50% chance of
+				// showing any one when randomised
+				for (int j = 0; j < 3; j++) {
+					if (shouldInclude(0.5f)) {
+						fields.add(ContactBuilder.getWebsite());
+					}
+				}
 
-				final String work = Integer
-						.toString(minPhone + random.nextInt(maxPhone - minPhone));
-				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
-						work, Phone.TYPE, Phone.TYPE_WORK));
+				// There can be up to 5 phone numbers of random types with a 35%
+				// chance of showing any one
+				for (int j = 0; j < 5; j++) {
+					if (shouldInclude(0.35f)) {
+						fields.add(ContactBuilder.getPhone());
+					}
+				}
 
-				final String home = Integer
-						.toString(minPhone + random.nextInt(maxPhone - minPhone));
-				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
-						home, Phone.TYPE, Phone.TYPE_HOME));
+				// There is one nickname with a 33% chance of showing if
+				// randomised
+				if (shouldInclude(0.33f)) {
+					fields.add(ContactBuilder.getNickName());
+				}
 
-				final Bitmap bitmap = generateBitmap(size, size, random);
+				// There can be up to two addresses with an 80% chance of
+				// showing if randomised
+				for (int j = 0; j < 2; j++) {
+					if (shouldInclude(0.8f)) {
+						fields.add(ContactBuilder.getAddress());
+					}
+				}
+
+				// There is one organisation with a 50% chance of showing if
+				// randomised
+				if (shouldInclude(0.5f)) {
+					fields.add(ContactBuilder.getOrganisation());
+				}
+
+				// Bitmaps are slow to save, so we drop the chance of including
+				// one when randomising to 5%
+				Bitmap bitmap = null;
+				if (shouldInclude(0.05f)) {
+					bitmap = generateBitmap(size, size, random);
+				}
 				addContact(fields, bitmap);
-				bitmap.recycle();
+
+				if (bitmap != null) {
+					bitmap.recycle();
+				}
 				publishProgress(i, count);
 				fields.clear();
 			}
 			return null;
+		}
+
+		/**
+		 * Randomly determines if something should be included based on the
+		 * factor. A factor of 0 indicates the it should never be included
+		 * whilst a factor of 1 indicates it should always be included.
+		 * 
+		 * Note that if the 'Randomise field' checkbox is unchecked, then we
+		 * always return true.
+		 * 
+		 * @param includeFactor
+		 *            a value between 0 and 1
+		 * @return
+		 */
+		private boolean shouldInclude(final float includeFactor) {
+
+			if (!mRandomise.isChecked()) {
+				return true;
+			}
+
+			float theFactor = includeFactor;
+			if (theFactor < 0.0f) {
+				theFactor = 0.0f;
+			}
+			if (theFactor > 1.0f) {
+				theFactor = 1.0f;
+			}
+			return random.nextFloat() < theFactor;
 		}
 
 		@Override

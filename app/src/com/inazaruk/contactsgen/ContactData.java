@@ -2,25 +2,29 @@ package com.inazaruk.contactsgen;
 
 import java.util.Random;
 
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.provider.ContactsContract.CommonDataKinds.Website;
+
 public class ContactData {
 
 	private final static Random random = new Random();
 
-	private static final String[] FORENAMES = new String[] { "Rozanne ", "Jettie ", "Hyman ",
-			"Jolynn ", "Tasha ", "Deidra ", "Evelyne ", "Erlinda ", "Bertram ", "Lorette ",
-			"Wendi ", "Tynisha ", "Sherly ", "Lashawna ", "Harriet ", "Tessie ", "Janis ",
-			"Alvaro ", "Reena ", "Providencia ", "Chase ", "Buddy ", "Diedre ", "Doria ",
-			"Alysha ", "Tami ", "Patsy ", "Louie ", "Merlene ", "Katherine ", "Trudy ",
-			"Sharonda ", "Vasiliki ", "Pandora ", "Calandra ", "Monica ", "Alisa ", "Dione ",
-			"Genevie ", "Therese ", "Alessandra ", "Charlene ", "Kayla ", "Daren ", "Kendra ",
-			"Sandy ", "Devora ", "Leora ", "Rosella ", "Tennie ", "Cherise ", "Violette ", "Tim ",
-			"Tinisha ", "Luci ", "Margarett ", "Carmine ", "Agnes ", "Shellie ", "Abraham ",
-			"Modesto ", "Omega ", "Deandra ", "Latasha ", "Stephen ", "Orpha ", "Robyn ",
-			"Leeanne ", "Michaele ", "Tracy ", "Soon ", "Janetta ", "Vernia ", "Kami ", "Joaquin ",
-			"Ursula ", "Alberto ", "Bettyann ", "Beau ", "Randall ", "Vina ", "Monroe ",
-			"Jeniffer ", "Sara ", "Jaleesa ", "Emelina ", "Cherri ", "Harland ", "Naoma ",
-			"Louis ", "Simone ", "Victorina ", "Collen ", "Clemmie ", "Adelia ", "Valerie ",
-			"Nanette ", "Alida ", "Elba ", "Zenobia " };
+	private static final String[] FORENAMES = new String[] { "Rozanne", "Jettie", "Hyman",
+			"Jolynn", "Tasha", "Deidra", "Evelyne", "Erlinda", "Bertram", "Lorette", "Wendi",
+			"Tynisha", "Sherly", "Lashawna", "Harriet", "Tessie", "Janis", "Alvaro", "Reena",
+			"Providencia", "Chase", "Buddy", "Diedre", "Doria", "Alysha", "Tami", "Patsy", "Louie",
+			"Merlene", "Katherine", "Trudy", "Sharonda", "Vasiliki", "Pandora", "Calandra",
+			"Monica", "Alisa", "Dione", "Genevie", "Therese", "Alessandra", "Charlene", "Kayla",
+			"Daren", "Kendra", "Sandy", "Devora", "Leora", "Rosella", "Tennie", "Cherise",
+			"Violette", "Tim", "Tinisha", "Luci", "Margarett", "Carmine", "Agnes", "Shellie",
+			"Abraham", "Modesto", "Omega", "Deandra", "Latasha", "Stephen", "Orpha", "Robyn",
+			"Leeanne", "Michaele", "Tracy", "Soon", "Janetta", "Vernia", "Kami", "Joaquin",
+			"Ursula", "Alberto", "Bettyann", "Beau", "Randall", "Vina", "Monroe", "Jeniffer",
+			"Sara", "Jaleesa", "Emelina", "Cherri", "Harland", "Naoma", "Louis", "Simone",
+			"Victorina", "Collen", "Clemmie", "Adelia", "Valerie", "Nanette", "Alida", "Elba",
+			"Zenobia", "Karl" };
 
 	private static final String[] SURNAMES = new String[] { "Lipkind", "Maharay", "Boos",
 			"Challis", "Welby", "Radde", "Garboczi", "Mcgirr", "Cantwell", "Palke", "Holton",
@@ -87,7 +91,62 @@ public class ContactData {
 			"Starbucks", "Mars", "Mattel", "Aéropostale", "FedEx Corporation", "Grainger",
 			"SoftWyer" };
 
+	private static String[] COUNTRIES = new String[] { "Afghanistan", "Albania", "Algeria",
+			"Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba",
+			"Australia", "Austria", "Azerbaijan", "Bahamas, The", "Bahrain", "Bangladesh",
+			"Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia",
+			"Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso",
+			"Burma", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde",
+			"Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros",
+			"Congo, Democratic Republic of the", "Congo, Republic of the", "Costa Rica",
+			"Cote d'Ivoire", "Croatia", "Cuba", "Curacao", "Cyprus", "Czech Republic", "Denmark",
+			"Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador", "Egypt",
+			"El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Fiji",
+			"Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece",
+			"Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See",
+			"Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
+			"Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya",
+			"Kiribati", "Korea, North", "Korea, South", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos",
+			"Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania",
+			"Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives",
+			"Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia",
+			"Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Namibia",
+			"Nauru", "Nepal", "Netherlands", "Netherlands Antilles", "New Zealand", "Nicaragua",
+			"Niger", "Nigeria", "North Korea", "Norway", "Oman", "Pakistan", "Palau",
+			"Palestinian Territories", "Panama", "Papua New Guinea", "Paraguay", "Peru",
+			"Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda",
+			"Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa",
+			"San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia",
+			"Seychelles", "Sierra Leone", "Singapore", "Sint Maarten", "Slovakia", "Slovenia",
+			"Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain",
+			"Sri Lanka", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria",
+			"Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga",
+			"Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda",
+			"Ukraine", "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan",
+			"Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe" };
+
+	private static int[] TYPE_EMAIL = new int[] { Email.TYPE_HOME, Email.TYPE_MOBILE,
+			Email.TYPE_WORK, Email.TYPE_OTHER };
+
+	private static int[] TYPE_WEBSITE = new int[] { Website.TYPE_BLOG, Website.TYPE_FTP,
+			Website.TYPE_HOME, Website.TYPE_HOMEPAGE, Website.TYPE_OTHER, Website.TYPE_PROFILE,
+			Website.TYPE_WORK };
+
+	private static int[] TYPE_PHONE = new int[] { Phone.TYPE_ASSISTANT, Phone.TYPE_CALLBACK,
+			Phone.TYPE_CAR, Phone.TYPE_COMPANY_MAIN, Phone.TYPE_FAX_HOME, Phone.TYPE_FAX_WORK,
+			Phone.TYPE_HOME, Phone.TYPE_ISDN, Phone.TYPE_MAIN, Phone.TYPE_MMS, Phone.TYPE_MOBILE,
+			Phone.TYPE_OTHER, Phone.TYPE_OTHER_FAX, Phone.TYPE_PAGER, Phone.TYPE_RADIO,
+			Phone.TYPE_TELEX, Phone.TYPE_TTY_TDD, Phone.TYPE_WORK, Phone.TYPE_WORK_MOBILE,
+			Phone.TYPE_WORK_PAGER };
+
+	private static int[] TYPE_ADDRESS = new int[] { StructuredPostal.TYPE_HOME,
+			StructuredPostal.TYPE_WORK, StructuredPostal.TYPE_OTHER };
+
 	private static String getRandom(final String[] data) {
+		return data[random.nextInt(data.length)];
+	}
+
+	private static int getRandom(final int[] data) {
 		return data[random.nextInt(data.length)];
 	}
 
@@ -101,6 +160,38 @@ public class ContactData {
 
 	public static String getCompany() {
 		return getRandom(COMPANIES);
+	}
+
+	public static String getForename() {
+		return getRandom(FORENAMES);
+	}
+
+	public static String getStreetType() {
+		return getRandom(STREETTYPE);
+	}
+
+	public static String getTown() {
+		return getRandom(PLACES);
+	}
+
+	public static String getCountry() {
+		return getRandom(COUNTRIES);
+	}
+
+	public static int getPhoneType() {
+		return getRandom(TYPE_PHONE);
+	}
+
+	public static int getEmailType() {
+		return getRandom(TYPE_EMAIL);
+	}
+
+	public static int getAddressType() {
+		return getRandom(TYPE_ADDRESS);
+	}
+
+	public static int getWebsiteType() {
+		return getRandom(TYPE_WEBSITE);
 	}
 
 }
