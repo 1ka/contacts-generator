@@ -21,10 +21,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
-import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Note;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
-import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
@@ -243,9 +241,9 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 			final Builder builder = ContentProviderOperation.newInsert(Data.CONTENT_URI)
 					.withValueBackReference(Data.RAW_CONTACT_ID, 0)
 					.withValue(Data.MIMETYPE, field.getContentItemType())
-					.withValue(field.getMetaValue(), field.getFieldValue());
-			if (field.hasFieldType()) {
-				builder.withValue(field.getMetaType(), field.getFieldType());
+					.withValue(field.getMetaValue(), field.getValue());
+			if (field.hasType()) {
+				builder.withValue(field.getMetaType(), field.getType());
 			}
 			ops.add(builder.build());
 		}
@@ -284,13 +282,9 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		@Override
 		protected Void doInBackground(final Integer... params) {
 
-			final String alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 			final int size = 128;
 			final int minPhone = 1000000;
 			final int maxPhone = 9999999;
-			final String names[] = new String[] { "test", "John", "Dou", "Angel", "Devil", "Hacker" };
-			final int[] nameCounters = new int[names.length];
 
 			final int count = params[0];
 
@@ -302,19 +296,10 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 			for (int i = 0; i < count && !isCancelled(); i++) {
 				fields.add(note);
 
-				final int firstCharIndex = random.nextInt(alphabet.length());
-				final int nameIndex = random.nextInt(names.length);
+				final ContactField name = ContactBuilder.getName();
+				fields.add(name);
 
-				final String firstChar = alphabet.substring(firstCharIndex, firstCharIndex + 1);
-
-				final String name = firstChar + names[nameIndex] + nameCounters[nameIndex];
-				nameCounters[nameIndex]++;
-				fields.add(new ContactField(StructuredName.CONTENT_ITEM_TYPE,
-						StructuredName.DISPLAY_NAME, name));
-
-				final String email = name.toLowerCase() + "@example.com";
-				fields.add(new ContactField(Email.CONTENT_ITEM_TYPE, Email.DATA, email, Email.TYPE,
-						Email.TYPE_WORK));
+				fields.add(ContactBuilder.getEmail(name.getValue()));
 
 				final String mobile = Integer.toString(minPhone
 						+ random.nextInt(maxPhone - minPhone));

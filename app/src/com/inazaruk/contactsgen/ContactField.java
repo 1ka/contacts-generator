@@ -27,15 +27,15 @@ public class ContactField {
 		return contentItemType;
 	}
 
-	public int getFieldType() {
+	public int getType() {
 		return type;
 	}
 
-	public String getFieldValue() {
+	public String getValue() {
 		return value;
 	}
 
-	public boolean hasFieldType() {
+	public boolean hasType() {
 		return metaType != null;
 	}
 
