@@ -10,6 +10,7 @@ import java.util.Random;
 
 import android.app.Activity;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderOperation.Builder;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -20,10 +21,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Note;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.Data;
+import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -43,6 +51,7 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 	private ProgressBar mProgressBar;
 	private TextView mProgressCountTextView;
 	private Button mCancelButton;
+	private CheckBox mRandomise;
 
 	private AsyncTask<?, ?, ?> mTask = null;
 
@@ -77,6 +86,7 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		mProgressBar = (ProgressBar) findViewById(R.id.progress);
 		mProgressCountTextView = (TextView) findViewById(R.id.progress_count);
 		mCancelButton = (Button) findViewById(R.id.cancel);
+		mRandomise = (CheckBox) findViewById(R.id.randomise);
 
 		mSeekBar.setOnSeekBarChangeListener(this);
 		mGenerateButton.setOnClickListener(this);
@@ -130,17 +140,19 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 	}
 
 	private int getGenerateCount() {
-		final int min = 1;
-		final int max = mSeekBar.getMax();
+		// final int min = 1;
+		// final int max = mSeekBar.getMax();
 		final int cur = mSeekBar.getProgress();
 
-		final int threshold = max / 2;
+		return cur;
 
-		if (cur < threshold) {
-			return cur;
-		}
-
-		return threshold + (cur - threshold) * 10;
+		// final int threshold = max / 2;
+		//
+		// if (cur < threshold) {
+		// return cur;
+		// }
+		//
+		// return threshold + (cur - threshold) * 10;
 	}
 
 	private void syncGenerateCountTextView() {
@@ -185,7 +197,7 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		mProgressCountTextView.setText(String.format("%d/%d", current + 1, max));
 	}
 
-	private Bitmap generateBitmap(final int x, final int y, final Random random) {
+	private static Bitmap generateBitmap(final int x, final int y, final Random random) {
 		final Bitmap bitmap = Bitmap.createBitmap(x, y, Config.ARGB_8888);
 		final Canvas canvas = new Canvas(bitmap);
 
@@ -195,6 +207,8 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 			color = sColors.get(index);
 		}
 		canvas.drawColor(color);
+
+		final Paint paint = new Paint();
 
 		final int circleCount = random.nextInt(20) + 5;
 		for (int i = 0; i < circleCount; i++) {
@@ -207,7 +221,6 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 				ccolor = sColors.get(index);
 			}
 
-			final Paint paint = new Paint();
 			paint.setColor(ccolor);
 			paint.setAntiAlias(true);
 			paint.setAlpha(random.nextInt(200) + 55);
@@ -218,69 +231,23 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		return bitmap;
 	}
 
-	private boolean addContact(final String displayName, final String emailId,
-			final String mobileNumber, final String workNumber, final String homeNumber,
-			final Bitmap image) {
+	private boolean addContact(final List<ContactField> fields, final Bitmap image) {
 
 		final ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
-		ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-				.withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
-				.withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build());
+		ops.add(ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
+				.withValue(RawContacts.ACCOUNT_TYPE, null)
+				.withValue(RawContacts.ACCOUNT_NAME, null).build());
 
-		// Names
-		if (displayName != null) {
-			ops.add(ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(ContactsContract.Data.MIMETYPE,
-							CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-					.withValue(CommonDataKinds.StructuredName.DISPLAY_NAME, displayName).build());
-		}
-
-		// Mobile Number
-		if (mobileNumber != null) {
-			ops.add(ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(ContactsContract.Data.MIMETYPE,
-							CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-					.withValue(CommonDataKinds.Phone.NUMBER, mobileNumber)
-					.withValue(CommonDataKinds.Phone.TYPE, CommonDataKinds.Phone.TYPE_MOBILE)
-					.build());
-		}
-
-		// Home Numbers
-		if (homeNumber != null) {
-			ops.add(ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(ContactsContract.Data.MIMETYPE,
-							CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-					.withValue(CommonDataKinds.Phone.NUMBER, homeNumber)
-					.withValue(CommonDataKinds.Phone.TYPE, CommonDataKinds.Phone.TYPE_HOME).build());
-		}
-
-		// Work Numbers
-		if (workNumber != null) {
-			ops.add(ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(ContactsContract.Data.MIMETYPE,
-							CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-					.withValue(CommonDataKinds.Phone.NUMBER, workNumber)
-					.withValue(CommonDataKinds.Phone.TYPE, CommonDataKinds.Phone.TYPE_WORK).build());
-		}
-
-		// Email
-		if (emailId != null) {
-			ops.add(ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(ContactsContract.Data.MIMETYPE,
-							CommonDataKinds.Email.CONTENT_ITEM_TYPE)
-					.withValue(CommonDataKinds.Email.DATA, emailId)
-					.withValue(CommonDataKinds.Email.TYPE, CommonDataKinds.Email.TYPE_WORK).build());
+		for (final ContactField field : fields) {
+			final Builder builder = ContentProviderOperation.newInsert(Data.CONTENT_URI)
+					.withValueBackReference(Data.RAW_CONTACT_ID, 0)
+					.withValue(Data.MIMETYPE, field.getContentItemType())
+					.withValue(field.getMetaValue(), field.getFieldValue());
+			if (field.hasFieldType()) {
+				builder.withValue(field.getMetaType(), field.getFieldType());
+			}
+			ops.add(builder.build());
 		}
 
 		if (image != null) {
@@ -296,11 +263,6 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 					.withValue(CommonDataKinds.Photo.PHOTO, stream.toByteArray()).build());
 		}
 
-		ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-				.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-				.withValue(ContactsContract.Data.MIMETYPE, CommonDataKinds.Note.CONTENT_ITEM_TYPE)
-				.withValue(CommonDataKinds.Note.NOTE, AUTOGENERATED_TAG).build());
-
 		// Asking the Contact provider to create a new contact
 		try {
 			getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
@@ -310,45 +272,70 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 		}
 	}
 
-	private void onTaskCompelted() {
+	private void onTaskCompleted() {
 		setProgressState(false);
 		updateAutogeneratedCount();
 	}
 
 	private class Generator extends AsyncTask<Integer, Integer, Void> {
+
+		final Random random = new Random();
+
 		@Override
 		protected Void doInBackground(final Integer... params) {
 
 			final String alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-			final int size = 512;
+			final int size = 128;
 			final int minPhone = 1000000;
 			final int maxPhone = 9999999;
 			final String names[] = new String[] { "test", "John", "Dou", "Angel", "Devil", "Hacker" };
 			final int[] nameCounters = new int[names.length];
 
 			final int count = params[0];
-			final Random random = new Random();
+
+			final ContactField note = new ContactField(Note.CONTENT_ITEM_TYPE, Note.NOTE,
+					AUTOGENERATED_TAG);
+
+			final List<ContactField> fields = new ArrayList<ContactField>();
+
 			for (int i = 0; i < count && !isCancelled(); i++) {
+				fields.add(note);
+
 				final int firstCharIndex = random.nextInt(alphabet.length());
 				final int nameIndex = random.nextInt(names.length);
 
 				final String firstChar = alphabet.substring(firstCharIndex, firstCharIndex + 1);
+
 				final String name = firstChar + names[nameIndex] + nameCounters[nameIndex];
 				nameCounters[nameIndex]++;
+				fields.add(new ContactField(StructuredName.CONTENT_ITEM_TYPE,
+						StructuredName.DISPLAY_NAME, name));
 
 				final String email = name.toLowerCase() + "@example.com";
+				fields.add(new ContactField(Email.CONTENT_ITEM_TYPE, Email.DATA, email, Email.TYPE,
+						Email.TYPE_WORK));
+
 				final String mobile = Integer.toString(minPhone
 						+ random.nextInt(maxPhone - minPhone));
+				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
+						mobile, Phone.TYPE, Phone.TYPE_MOBILE));
+
 				final String work = Integer
 						.toString(minPhone + random.nextInt(maxPhone - minPhone));
+				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
+						work, Phone.TYPE, Phone.TYPE_WORK));
+
 				final String home = Integer
 						.toString(minPhone + random.nextInt(maxPhone - minPhone));
-				final Bitmap bitmap = generateBitmap(size, size, random);
+				fields.add(new ContactField(CommonDataKinds.Phone.CONTENT_ITEM_TYPE, Phone.DATA,
+						home, Phone.TYPE, Phone.TYPE_HOME));
 
-				addContact(name, email, mobile, work, home, bitmap);
+				final Bitmap bitmap = generateBitmap(size, size, random);
+				addContact(fields, bitmap);
 				bitmap.recycle();
 				publishProgress(i, count);
+				fields.clear();
 			}
 			return null;
 		}
@@ -360,12 +347,12 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 
 		@Override
 		protected void onPostExecute(final Void result) {
-			onTaskCompelted();
+			onTaskCompleted();
 		}
 
 		@Override
 		protected void onCancelled() {
-			onTaskCompelted();
+			onTaskCompleted();
 		}
 	}
 
@@ -404,12 +391,12 @@ public class MainActivity extends Activity implements OnClickListener, OnSeekBar
 
 		@Override
 		protected void onPostExecute(final Void result) {
-			onTaskCompelted();
+			onTaskCompleted();
 		}
 
 		@Override
 		protected void onCancelled() {
-			onTaskCompelted();
+			onTaskCompleted();
 		}
 	}
 }

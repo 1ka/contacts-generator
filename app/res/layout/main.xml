@@ -33,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:max="100" />
+            android:max="5000" />
 
         <TextView
             android:id="@+id/generate_count"
@@ -44,6 +44,13 @@
             android:gravity="center" />
         
     </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/randomise"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/randomise" />
 
     <Button
         android:id="@+id/generate"
